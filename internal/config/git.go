@@ -39,7 +39,7 @@ func List(scope []string) (map[string]string, error) {
 	out, err := exec.Command("git", args...).Output()
 	if err != nil {
 		var exitErr *exec.ExitError
-		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+		if errors.As(err, &exitErr) && (exitErr.ExitCode() == 1 || exitErr.ExitCode() == 128) {
 			return map[string]string{}, nil // empty or absent config
 		}
 		return nil, fmt.Errorf("git config --list: %w", err)
