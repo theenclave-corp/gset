@@ -11,6 +11,9 @@ type Identity struct {
 	Editor string
 }
 
+// ErrAborted is returned by Confirm when the user cancels (presses Esc or Ctrl-C).
+var ErrAborted = huh.ErrUserAborted
+
 // AskIdentity interactively prompts for identity fields.
 // Pre-populated fields are skipped. withEditor controls whether the
 // editor prompt is included (true for global, false for local).
@@ -51,7 +54,9 @@ func AskIdentity(id *Identity, withEditor bool) error {
 }
 
 // Confirm shows a yes/no prompt with the given message.
-// Returns true if the user confirms.
+// Returns (true, nil) if the user confirms, (false, nil) if they choose No,
+// and (false, ErrAborted) if they cancel with Esc or Ctrl-C.
+// Callers must check for ErrAborted to distinguish cancellation from "No".
 func Confirm(msg string) (bool, error) {
 	var ok bool
 	err := huh.NewForm(
