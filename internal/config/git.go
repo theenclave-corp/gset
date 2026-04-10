@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -37,7 +38,11 @@ func List(scope []string) (map[string]string, error) {
 	args = append(args, "--list")
 	out, err := exec.Command("git", args...).Output()
 	if err != nil {
-		return map[string]string{}, nil
+		var exitErr *exec.ExitError
+		if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+			return map[string]string{}, nil // empty or absent config
+		}
+		return nil, fmt.Errorf("git config --list: %w", err)
 	}
 	result := map[string]string{}
 	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
